@@ -1,0 +1,20 @@
+/project
+├── app.py
+├── config.py
+├── /application
+│   ├── __init__.py           ← create_app() lives here
+│   ├── extensions.py         ← db, ma initialized here
+│   ├── models.py             ← All SQLAlchemy models
+│   └── /blueprints
+│       ├── /customers
+│       │   ├── __init__.py   ← Blueprint setup
+│       │   └── routes.py     ← Customer routes
+|       |   └── schemas.py    ← Marshmallow schemas
+│       ├── /mechanics
+│       │   ├── __init__.py   ← Blueprint setup
+│       │   └── routes.py     ← Mechanic routes
+|       |   └──  schemas.py   ← Marshmallow schemas
+│       └── /tickets
+│           ├── __init__.py   ← Blueprint setup
+│           └── routes.py     ← Ticket routes
+|           └──  schemas.py   ← Marshmallow schemas
