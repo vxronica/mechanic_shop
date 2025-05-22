@@ -8,6 +8,7 @@ from . import customers_bp
 from app.extensions import limiter, cache
 from app.utils.util import encode_token, token_required
 from app.blueprints.tickets.schemas import tickets_schema
+from sqlalchemy.exc import SQLAlchemyError
 
 @customers_bp.route("/login", methods=['POST'])
 def login():
@@ -65,15 +66,15 @@ def create_customer():
 #@cache.cached(timeout=60) #store members for 60s. does not need to be the most updated
 def get_customers():
     try:
-        page = int(request.args.get('page'))
-        per_page = int(request.args.get('per_page'))
+        page = int(request.args.get('page', 1))
+        per_page = int(request.args.get('per_page', 10))
         query = select(Customer)
         customers = db.paginate(query, page=page, per_page=per_page)
         return customers_schema.jsonify(customers), 200
-    except:
-        query = select(Customer)
-        customers = db.session.execute(query).scalars().all()
-        return customers_schema.jsonify(customers)
+    except (ValueError, TypeError):
+        return jsonify({"error": "Invalid pagination parameters."}), 400
+    except SQLAlchemyError as e:
+        return jsonify({"error": str(e)}), 500
 
 # Get customer by id
 @customers_bp.route('/<int:id>', methods=['GET'])
