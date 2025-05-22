@@ -2,7 +2,7 @@ from .schemas import ticket_schema, tickets_schema
 from flask import request, jsonify
 from marshmallow import ValidationError
 from sqlalchemy import select
-from app.models import ServiceTicket, Customer, Mechanic, db
+from app.models import ServiceTicket, Customer, Mechanic, db, Inventory
 from . import tickets_bp
 from datetime import datetime
 from app.extensions import limiter, cache
@@ -110,12 +110,66 @@ def update_ticket(id):
         print(f"Unexpected error during ticket update: {e}")
         return jsonify({"error": "An unexpected error occurred"}), 500
 
-# @tickets_bp.route('/<int:id>', methods=['DELETE'])
-# def delete_ticket(id):
-#     ticket = db.session.get(ServiceTicket, id)
-#     if not ticket:
-#         return jsonify({"error": "Ticket not found"}), 404
+#edit mechanics
+@tickets_bp.route('/<int:ticket_id>/edit', methods=['PUT'])
+def update_ticket_mechanics(ticket_id):
+    ticket = db.session.get(ServiceTicket, ticket_id)
+    if not ticket:
+        return jsonify({"error": "Service ticket not found."}), 404
 
-#     db.session.delete(ticket)
-#     db.session.commit()
-#     return jsonify({"message": f"Service ticket {id} deleted"}), 200
+    data = request.get_json()
+    if not data:
+        return jsonify({"error": "No input data provided."}), 400
+
+    add_ids = data.get("add_ids", [])
+    remove_ids = data.get("remove_ids", [])
+
+    try:
+        # add mechanics
+        for mech_id in add_ids:
+            mechanic = db.session.get(Mechanic, mech_id)
+            if mechanic and mechanic not in ticket.mechanics:
+                ticket.mechanics.append(mechanic)
+
+        # remove mechanics
+        for mech_id in remove_ids:
+            mechanic = db.session.get(Mechanic, mech_id)
+            if mechanic and mechanic in ticket.mechanics:
+                ticket.mechanics.remove(mechanic)
+
+        db.session.commit()
+        return jsonify({"message": "Ticket mechanics updated successfully."}), 200
+
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"error": str(e)}), 500
+
+#add part to service ticket
+@tickets_bp.route('/<int:ticket_id>/add_part', methods=['PUT'])
+def add_part_to_ticket(ticket_id):
+    ticket = db.session.get(ServiceTicket, ticket_id)
+    if not ticket:
+        return jsonify({"error": "Ticket not found"}), 404
+
+    data = request.get_json()
+    if not data:
+        return jsonify({"error": "Missing JSON data"}), 400
+
+    part_id = data.get('part_id')
+    if not part_id:
+        return jsonify({"error": "Missing part_id"}), 400
+
+    part = db.session.get(Inventory, part_id)
+    if not part:
+        return jsonify({"error": "Part not found"}), 404
+
+    if part in ticket.parts:
+        return jsonify({"message": "Part already associated with this ticket."}), 200
+
+    try:
+        ticket.parts.append(part)
+        db.session.commit()
+        return jsonify({"message": f"Part {part.name} added to ticket {ticket_id}"}), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"error": "Failed to add part to ticket", "details": str(e)}), 500

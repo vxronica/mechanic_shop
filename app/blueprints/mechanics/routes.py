@@ -52,8 +52,8 @@ def get_mechanic(id):
 
 #update mechanic by id
 @mechanics_bp.route('/<int:id>', methods=['PUT'])
-@limiter.limit("5 per day") #prevent changes to accounts too often
-def update_mechanic(id, user_id):
+@limiter.limit("50 per day") #prevent changes to accounts too often
+def update_mechanic(id):
     mechanic = db.session.get(Mechanic, id)
     if not mechanic:
         return jsonify({"error": "Mechanic not found"}), 404
@@ -88,7 +88,7 @@ def update_mechanic(id, user_id):
 #delete mechanic
 @mechanics_bp.route('/<int:id>', methods=['DELETE'])
 @limiter.limit("5 per day") #limit the amount of accounts deleted to 5 max
-def delete_mechanic(id, user_id):
+def delete_mechanic(id):
     mechanic = db.session.get(Mechanic, id)
     if not mechanic:
         return jsonify({"error": "Mechanic not found"}), 404
@@ -96,3 +96,25 @@ def delete_mechanic(id, user_id):
     db.session.delete(mechanic)
     db.session.commit()
     return jsonify({"message": f"Mechanic {id} deleted"}), 200
+
+@mechanics_bp.route('/most_worked', methods=['GET'])
+def mechanics_by_ticket_count():
+    mechanics = db.session.query(Mechanic).all()
+
+    # create list of (mechanic, count of tickets)
+    mechanics_with_counts = [
+        (mechanic, len(mechanic.tickets))
+        for mechanic in mechanics
+    ]
+
+    # sort descending by ticket count
+    mechanics_with_counts.sort(key=lambda x: x[1], reverse=True)
+
+    # response
+    result = []
+    for mechanic, count in mechanics_with_counts:
+        mechanic_data = mechanic_schema.dump(mechanic)
+        mechanic_data['ticket_count'] = count
+        result.append(mechanic_data)
+
+    return jsonify(result)

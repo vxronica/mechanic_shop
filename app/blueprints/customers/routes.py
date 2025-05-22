@@ -62,11 +62,18 @@ def create_customer():
 
 # Get all customers
 @customers_bp.route('/', methods=['GET'])
-@cache.cached(timeout=60) #store members for 60s. does not need to be the most updated
+#@cache.cached(timeout=60) #store members for 60s. does not need to be the most updated
 def get_customers():
-    query = select(Customer)
-    customers = db.session.execute(query).scalars().all()
-    return customers_schema.jsonify(customers)
+    try:
+        page = int(request.args.get('page'))
+        per_page = int(request.args.get('per_page'))
+        query = select(Customer)
+        customers = db.paginate(query, page=page, per_page=per_page)
+        return customers_schema.jsonify(customers), 200
+    except:
+        query = select(Customer)
+        customers = db.session.execute(query).scalars().all()
+        return customers_schema.jsonify(customers)
 
 # Get customer by id
 @customers_bp.route('/<int:id>', methods=['GET'])

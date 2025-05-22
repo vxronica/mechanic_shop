@@ -55,3 +55,21 @@ class ServiceTicket(Base):
     customer_id: Mapped[int] = mapped_column(db.ForeignKey('customers.id'), nullable=False)
     customer: Mapped['Customer'] = db.relationship(back_populates='tickets')
     mechanics: Mapped[List['Mechanic']] = db.relationship(secondary=ticket_mechanic, back_populates='tickets')
+    parts: Mapped[List["Inventory"]] = db.relationship("Inventory",secondary="inventory_ticket",back_populates="tickets"
+)
+
+# association table for inventory and service tickets
+inventory_ticket = db.Table(
+    'inventory_ticket',
+    db.Column('inventory_id', db.Integer, db.ForeignKey('inventory.id'), primary_key=True),
+    db.Column('ticket_id', db.Integer, db.ForeignKey('service_tickets.id'), primary_key=True)
+)
+
+class Inventory(Base):
+    __tablename__ = 'inventory'
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    name: Mapped[str] = mapped_column(db.String(100), nullable=False)
+    price: Mapped[float] = mapped_column(db.Float, nullable=False)
+
+    tickets: Mapped[List['ServiceTicket']] = db.relationship(secondary='inventory_ticket', back_populates='parts')
