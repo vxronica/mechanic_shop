@@ -17,9 +17,11 @@ class Customer(Base):
     __tablename__ = 'customers'
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    name: Mapped[str] = mapped_column(db.String(255), nullable=False)
-    email: Mapped[str] = mapped_column(db.String(360), nullable=False, unique=True)
+    name: Mapped[str] = mapped_column(db.String(100), nullable=False)
+    email: Mapped[str] = mapped_column(db.String(150), nullable=False, unique=True)
     phone: Mapped[str] = mapped_column(db.String(20), nullable=False)
+    password: Mapped[str] = mapped_column(db.String(100), nullable=False)
+    
     tickets: Mapped[List['ServiceTicket']] = db.relationship(
         back_populates='customer',
         foreign_keys='ServiceTicket.customer_id'

@@ -5,9 +5,11 @@ from sqlalchemy import select
 from app.models import Mechanic, db
 from sqlalchemy.exc import IntegrityError
 from . import mechanics_bp
+from app.extensions import limiter, cache
 
 #create mechanic
 @mechanics_bp.route('/', methods=['POST'])
+@limiter.limit("5 per day") #no more than 5 new accounts per ip address
 def create_mechanic():
     try:
         input_data = request.get_json()
@@ -33,12 +35,15 @@ def create_mechanic():
 
 #get all mechanics
 @mechanics_bp.route('/', methods=['GET'])
+@cache.cached(timeout=60) #store memchanics for 60s. does not need frequent updates
 def get_mechanics():
-    mechanics = db.session.execute(select(Mechanic)).scalars().all()
+    query = select(Mechanic)
+    mechanics = db.session.execute(query).scalars().all()
     return mechanics_schema.jsonify(mechanics)
 
 #get mechanic by id
 @mechanics_bp.route('/<int:id>', methods=['GET'])
+@cache.cached(timeout=60) #store memchanic for 60s. does not need frequent updates
 def get_mechanic(id):
     mechanic = db.session.get(Mechanic, id)
     if mechanic:
@@ -47,7 +52,8 @@ def get_mechanic(id):
 
 #update mechanic by id
 @mechanics_bp.route('/<int:id>', methods=['PUT'])
-def update_mechanic(id):
+@limiter.limit("5 per day") #prevent changes to accounts too often
+def update_mechanic(id, user_id):
     mechanic = db.session.get(Mechanic, id)
     if not mechanic:
         return jsonify({"error": "Mechanic not found"}), 404
@@ -81,7 +87,8 @@ def update_mechanic(id):
 
 #delete mechanic
 @mechanics_bp.route('/<int:id>', methods=['DELETE'])
-def delete_mechanic(id):
+@limiter.limit("5 per day") #limit the amount of accounts deleted to 5 max
+def delete_mechanic(id, user_id):
     mechanic = db.session.get(Mechanic, id)
     if not mechanic:
         return jsonify({"error": "Mechanic not found"}), 404

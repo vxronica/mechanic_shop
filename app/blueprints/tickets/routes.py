@@ -5,9 +5,11 @@ from sqlalchemy import select
 from app.models import ServiceTicket, Customer, Mechanic, db
 from . import tickets_bp
 from datetime import datetime
+from app.extensions import limiter, cache
 
 #create ticket
 @tickets_bp.route('/', methods=['POST'])
+@limiter.limit("100 per day") #a small mechanic company likely will not have more than 100 issues in a day. 100 tix max
 def create_ticket():
     try:
         input_data = request.get_json()
@@ -54,12 +56,14 @@ def create_ticket():
 
 #get all service tickets
 @tickets_bp.route('/', methods=['GET'])
+@cache.cached(timeout=60) #store tickets accessed for 60s. tickets are not frequently updated
 def get_tickets():
     tickets = db.session.execute(select(ServiceTicket)).scalars().all()
     return tickets_schema.jsonify(tickets)
 
 #get tickets by id
 @tickets_bp.route('/<int:id>', methods=['GET'])
+@cache.cached(timeout=60) #store tickets accessed for 60s. tickets are not frequently updated
 def get_ticket(id):
     ticket = db.session.get(ServiceTicket, id)
     if ticket:
@@ -68,6 +72,7 @@ def get_ticket(id):
 
 #update ticket by id
 @tickets_bp.route('/<int:id>', methods=['PUT'])
+@limiter.limit("100 per day") ##a small mechanic company likely will not have more than 100 issues in a day. 100 tix max
 def update_ticket(id):
     ticket = db.session.get(ServiceTicket, id)
     if not ticket:
