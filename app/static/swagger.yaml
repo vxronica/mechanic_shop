@@ -1,0 +1,599 @@
+#app/static/swagger.yaml
+
+swagger: '2.0'
+info:
+  title: "Mechanic Shop API"
+  description: "This is an API to manage customers, mechanics, inventory, and service tickets in a mechanic shop"
+  version: "1.0.0"
+host: "127.0.0.1:5000"
+schemes:
+  - "http"
+consumes:
+  - "application/json"
+produces:
+  - "application/json"
+securityDefinitions:
+  BearerAuth:
+    type: apiKey
+    name: Authorization
+    in: header
+
+paths:
+  /customers/login:
+    post:
+      summary: "Customer login"
+      description: "Authenticate a customer and return a token"
+      parameters:
+        - in: body
+          name: credentials
+          required: true
+          schema:
+            $ref: '#/definitions/CustomerLogin'
+      responses:
+        200:
+          description: "Login successful"
+          schema:
+            $ref: '#/definitions/LoginResponse'
+        400:
+          description: "Validation error"
+        401:
+          description: "Invalid email or password"
+
+  /customers/:
+    post:
+      summary: "Create a new customer"
+      parameters:
+        - in: body
+          name: body
+          required: true
+          schema:
+            $ref: '#/definitions/NewCustomer'
+      responses:
+        201:
+          description: "Customer created"
+          schema:
+            $ref: '#/definitions/Customer'
+        400:
+          description: "Invalid input"
+    get:
+      summary: "Get all customers (paginated)"
+      parameters:
+        - name: page
+          in: query
+          type: integer
+          default: 1
+        - name: per_page
+          in: query
+          type: integer
+          default: 10
+      responses:
+        200:
+          description: "List of customers"
+          schema:
+            $ref: '#/definitions/CustomersPaginated'
+        400:
+          description: "Invalid pagination parameters"
+
+  /customers/<int:id>:
+    get:
+      summary: "Get a customer by ID"
+      parameters:
+        - name: id
+          in: path
+          required: true
+          type: integer
+      responses:
+        200:
+          description: "Customer data"
+          schema:
+            $ref: '#/definitions/Customer'
+
+        404:
+          description: "Customer not found"
+    put:
+      summary: "Update a customer by ID"
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          type: integer
+        - in: body
+          name: body
+          required: true
+          schema:
+            $ref: '#/definitions/UpdateCustomer'
+      responses:
+        200:
+          description: "Customer updated"
+          schema:
+            $ref: '#/definitions/Customer'
+        400:
+          description: "Invalid input or duplicate email"
+        404:
+          description: "Customer not found"
+    delete:
+      summary: "Delete a customer by ID"
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          type: integer
+      responses:
+        200:
+          description: "Customer deleted"
+        404:
+          description: "Customer not found"
+
+  /customers/my-tickets:
+    get:
+      summary: "Get customer's service tickets"
+      security:
+        - BearerAuth: []
+      responses:
+        200:
+          description: "List of tickets"
+          schema:
+            $ref: '#/definitions/TicketsList'
+        401:
+          description: "Unauthorized"
+
+  /mechanics/:
+    post:
+      summary: "Create a new mechanic"
+      parameters:
+        - in: body
+          name: body
+          required: true
+          schema:
+            $ref: '#/definitions/NewMechanic'
+      responses:
+        201:
+          description: "Mechanic created"
+          schema:
+            $ref: '#/definitions/Mechanic'
+        400:
+          description: "Invalid input or duplicate email"
+    get:
+      summary: "Get all mechanics"
+      responses:
+        200:
+          description: "List of mechanics"
+          schema:
+            $ref: '#/definitions/MechanicsList'
+
+  /mechanics/<int:id>:
+    get:
+      summary: "Get a mechanic by ID"
+      parameters:
+        - name: id
+          in: path
+          required: true
+          type: integer
+      responses:
+        200:
+          description: "Mechanic data"
+          schema:
+            $ref: '#/definitions/Mechanic'
+        404:
+          description: "Mechanic not found"
+    put:
+      summary: "Update a mechanic by ID"
+      parameters:
+        - name: id
+          in: path
+          required: true
+          type: integer
+        - in: body
+          name: body
+          required: true
+          schema:
+            $ref: '#/definitions/UpdateMechanic'
+      responses:
+        200:
+          description: "Mechanic updated"
+        400:
+          description: "Invalid input or duplicate email"
+        404:
+          description: "Mechanic not found"
+    delete:
+      summary: "Delete a mechanic by ID"
+      parameters:
+        - name: id
+          in: path
+          required: true
+          type: integer
+      responses:
+        200:
+          description: "Mechanic deleted"
+        404:
+          description: "Mechanic not found"
+
+  /mechanics/most_worked:
+    get:
+      summary: "Get mechanics sorted by number of tickets worked on"
+      responses:
+        200:
+          description: "List of mechanics sorted by ticket count"
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/MechanicWithCount'
+
+
+  /inventory/:
+    post:
+      summary: "Add a new inventory part"
+      parameters:
+        - in: body
+          name: body
+          required: true
+          schema:
+            $ref: '#/definitions/NewInventoryPart'
+      responses:
+        201:
+          description: "Inventory part created"
+          schema:
+            $ref: '#/definitions/InventoryPart'
+        400:
+          description: "Invalid input"
+    get:
+      summary: "Get all inventory parts"
+      responses:
+        200:
+          description: "List of inventory parts"
+          schema:
+            $ref: '#/definitions/InventoryList'
+
+
+  /inventory/<int:id>:
+    get:
+      summary: "Get inventory part by ID"
+      parameters:
+        - name: id
+          in: path
+          required: true
+          type: integer
+      responses:
+        200:
+          description: "Inventory part data"
+          schema:
+            $ref: '#/definitions/InventoryPart'
+        404:
+          description: "Inventory part not found"
+    put:
+      summary: "Update inventory part by ID"
+      parameters:
+        - name: id
+          in: path
+          required: true
+          type: integer
+        - in: body
+          name: body
+          required: true
+          schema:
+            $ref: '#/definitions/UpdateInventoryPart'
+      responses:
+        200:
+          description: "Inventory part updated"
+        400:
+          description: "Invalid input"
+        404:
+          description: "Inventory part not found"
+    delete:
+      summary: "Delete inventory part by ID"
+      parameters:
+        - name: id
+          in: path
+          required: true
+          type: integer
+      responses:
+        200:
+          description: "Inventory part deleted"
+        404:
+          description: "Inventory part not found"
+
+  /tickets/:
+    post:
+      summary: "Create a new service ticket"
+      parameters:
+        - in: body
+          name: body
+          required: true
+          schema:
+            $ref: '#/definitions/NewServiceTicket'
+      responses:
+        201:
+          description: "Service ticket created"
+          schema:
+            $ref: '#/definitions/ServiceTicket'
+        400:
+          description: "Invalid input"
+    get:
+      summary: "Get all service tickets"
+      responses:
+        200:
+          description: "List of service tickets"
+          schema:
+            $ref: '#/definitions/TicketsList'
+        400:
+          description: "Invalid pagination parameters"
+
+  /tickets/<int:id>:
+    get:
+      summary: "Get a service ticket by ID"
+      parameters:
+        - name: id
+          in: path
+          required: true
+          type: integer
+      responses:
+        200:
+          description: "Service ticket data"
+          schema:
+            $ref: '#/definitions/ServiceTicket'
+        404:
+          description: "Service ticket not found"
+    put:
+      summary: "Update a service ticket by ID"
+      parameters:
+        - name: id
+          in: path
+          required: true
+          type: integer
+        - in: body
+          name: body
+          required: true
+          schema:
+            $ref: '#/definitions/UpdateServiceTicket'
+      responses:
+        200:
+          description: "Service ticket updated"
+        400:
+          description: "Invalid input"
+        404:
+          description: "Service ticket not found"
+
+  tickets/<int:id>/edit:
+    put:
+      summary: "Update ticket mechanics"
+      parameters:
+        - name: id
+          in: path
+          required: true
+          type: integer
+        - in: body
+          name: body
+          required: true
+          schema:
+            $ref: '#/definitions/UpdateMechanics'
+      responses:
+        200:
+          description: "Mechanic assigned to ticket"
+        400:
+          description: "Invalid input"
+        404:
+          description: "Ticket or mechanic not found"
+
+  /tickets/<int:id>/add_part:
+    put:
+      summary: "Add an inventory part to a service ticket"
+      parameters:
+        - name: id
+          in: path
+          required: true
+          type: integer
+        - in: body
+          name: body
+          required: true
+          schema:
+            $ref: '#/definitions/AddPart'
+      responses:
+        200:
+          description: "Part added to ticket"
+        400:
+          description: "Invalid input"
+        404:
+          description: "Ticket or part not found"
+
+definitions:
+  CustomerLogin:
+    type: object
+    required:
+      - email
+      - password
+    properties:
+      email:
+        type: string
+        example: "john@example.com"
+      password:
+        type: string
+        example: "password123"
+
+  LoginResponse:
+    type: object
+    properties:
+      status:
+        type: string
+        example: "success"
+      message: 
+        type: string
+        example: "Successfully Logged In"
+      auth_token:
+        type: string
+        example: "eyJ0eXAiOiJKV1QiLCJhbGci..."
+
+  NewCustomer:
+    type: object
+    required:
+      - name
+      - email
+      - phone
+      - password
+    properties:
+      name:
+        type: string
+      email:
+        type: string
+      phone:
+        type: string
+      password:
+        type: string
+
+  UpdateCustomer:
+    type: object
+    properties:
+      name:
+        type: string
+      email:
+        type: string
+      phone:
+        type: string
+
+  Customer:
+    type: object
+    properties:
+      id: 
+        type: integer
+      name:
+        type: string
+      email: 
+        type: string
+      phone:
+        type: string
+
+  NewMechanic:
+    type: object
+    required:
+      - name
+      - email
+      - phone
+      - password
+    properties:
+      name:
+        type: string
+      email:
+        type: string
+      phone:
+        type: string
+      password:
+        type: string
+
+  UpdateMechanic:
+    type: object
+    properties:
+      name:
+        type: string
+      email:
+        type: string
+      phone:
+        type: string
+      salary:
+        type: number
+
+  MechanicWithCount:
+    type: object
+    properties:
+      id:
+        type: integer
+      name:
+        type: string
+      ticket_count:
+        type: integer
+
+  NewInventoryPart:
+    type: object
+    required:
+      - part_name
+      - quantity
+      - price
+    properties:
+      name: 
+        type: string
+      quantity:
+        type: integer
+      price:
+        type: number
+
+
+  UpdateInventoryPart:
+    type: object
+    properties:
+      name: 
+        type: string
+      quantity:
+        type: integer
+      price:
+        type: number
+
+  NewServiceTicket:
+    type: object
+    required:
+      - VIN
+      - service_date
+      - service_desc
+      - customer_id
+      - mechanic_ids
+    properties:
+      VIN:
+        type: string
+      service_date:
+        type: string
+        format: date
+      service_desc:
+        type: string
+      customer_id:
+        type: integer
+      mechanic_ids: 
+        type: array
+        items:
+          type: integer
+
+  UpdateMechanics:
+    type: object
+    properties:
+      add_ids: 
+        type: array
+        items:
+          type: integer
+      remove_ids: 
+        type: array
+        items:
+          type: integer
+
+  AddPart:
+    type: object
+    required:
+      - part_id
+    properties:
+      part_id:
+        type: integer
+      
+  # List responses
+  CustomersPaginated:
+    type: object
+    properties:
+      items: 
+        type: array
+        items: { $ref: '#/definitions/Customer' }
+      total:
+        type: integer
+      page:
+        type: integer
+      per_page:
+        type: integer
+
+  MechanicsList:
+    type: array
+    items: { $ref: '#/definitions/Mechanic' }
+
+  InventoryList:
+    type: array
+    items: { $ref: '#/definitions/InventoryPart' }
+
+  TicketsList:
+    type: array
+    items: { $ref: '#/definitions/ServiceTicket' }
