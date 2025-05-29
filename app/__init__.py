@@ -6,6 +6,7 @@ from .blueprints.mechanics import mechanics_bp
 from .blueprints.tickets import tickets_bp
 from .blueprints.inventory import inventory_bp
 from flask_swagger_ui import get_swaggerui_blueprint
+from config import DevelopmentConfig, TestingConfig, ProductionConfig
 
 SWAGGER_URL = '/api/docs'  # URL for exposing Swagger UI (without trailing '/')
 API_URL = '/static/swagger.yaml'  # Our API URL (can of course be a local resource)
@@ -19,8 +20,15 @@ swaggerui_blueprint = get_swaggerui_blueprint(
 )
 
 def create_app(config_name):
+
+    config_mapping = {
+        'development': DevelopmentConfig,
+        'testing': TestingConfig,
+        'production': ProductionConfig
+    }
     app = Flask(__name__)
-    app.config.from_object(f'config.{config_name}')
+    #app.config.from_object(f'config.{config_name}')
+    app.config.from_object(config_mapping[config_name])
 
     #initialize extensions
     ma.init_app(app)

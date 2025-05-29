@@ -1,20 +1,38 @@
-/project
-├── app.py
-├── config.py
-├── /application
-│   ├── __init__.py           ← create_app() lives here
-│   ├── extensions.py         ← db, ma initialized here
-│   ├── models.py             ← All SQLAlchemy models
-│   └── /blueprints
-│       ├── /customers
-│       │   ├── __init__.py   ← Blueprint setup
-│       │   └── routes.py     ← Customer routes
-|       |   └── schemas.py    ← Marshmallow schemas
-│       ├── /mechanics
-│       │   ├── __init__.py   ← Blueprint setup
-│       │   └── routes.py     ← Mechanic routes
-|       |   └──  schemas.py   ← Marshmallow schemas
-│       └── /tickets
-│           ├── __init__.py   ← Blueprint setup
-│           └── routes.py     ← Ticket routes
-|           └──  schemas.py   ← Marshmallow schemas
+mechanic_shop/
+│
+├── app/
+│   ├── __init__.py     ← create_app() lives here
+│   ├── models.py       ← All SQLAlchemy models
+│   ├── extensions.py   ← db, ma initialized here
+│   ├── utils/
+│   │   └── util.py
+│   ├── blueprints/
+│   │   ├── customers/
+│   |   │   ├── __init__.py   ← Blueprint setup
+│   |   │   └── routes.py     ← Customer routes
+|   |   |   └── schemas.py    ← Marshmallow schemas
+│   │   ├── mechanics/
+│   |   │   ├── __init__.py   ← Blueprint setup
+│   |   │   └── routes.py     ← Mechanic routes
+|   |   |   └── schemas.py    ← Marshmallow schemas
+│   │   ├── tickets/
+│   |   │   ├── __init__.py   ← Blueprint setup
+│   |   │   └── routes.py     ← Ticket routes
+|   |   |   └── schemas.py    ← Marshmallow schemas
+│   │   └── inventory/
+│   |   │   ├── __init__.py   ← Blueprint setup
+│   |   │   └── routes.py     ← Inventory routes
+|   |   |   └── schemas.py    ← Marshmallow schemas
+│   ├── tests/
+│   |   ├── __init__.py
+│   |   ├── test_customers.py
+│   |   ├── test_mechanics.py
+│   |  ├── test_inventory.py
+│   |   └── test_tickets.py
+│   |
+|   |── static/
+│   └── swagger.yaml          
+│
+├── app.py  
+├── config.py                     
+├── requirements.txt

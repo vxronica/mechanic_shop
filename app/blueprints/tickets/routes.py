@@ -77,38 +77,45 @@ def update_ticket(id):
     ticket = db.session.get(ServiceTicket, id)
     if not ticket:
         return jsonify({"error": "Ticket not found"}), 404
-
     try:
         input_data = request.get_json()
         if not input_data:
             return jsonify({"error": "No input data provided"}), 400
+        
+        # update only fields that are provided
+        if 'VIN' in input_data:
+            ticket.VIN = input_data['VIN']
 
-        # validate customer ID
-        customer = db.session.get(Customer, input_data.get('customer_id'))
-        if not customer:
-            return jsonify({"error": "Invalid customer ID"}), 400
+        if 'service_date' in input_data:
+            try:
+                ticket.service_date = datetime.strptime(input_data['service_date'], "%Y-%m-%d").date()
+            except ValueError:
+                return jsonify({"error": "Invalid date format. Use YYYY-MM-DD."}), 400
 
-        #validate mechanic IDs
-        mechanics = db.session.query(Mechanic).filter(Mechanic.id.in_(input_data.get('mechanic_ids', []))).all()
-        if not mechanics or len(mechanics) != len(input_data.get('mechanic_ids', [])):
-            return jsonify({"error": "Invalid mechanic IDs"}), 400
+        if 'service_desc' in input_data:
+            ticket.service_desc = input_data['service_desc']
 
-        #update ticket fields
-        ticket.VIN = input_data['VIN']
-        ticket.service_date = datetime.strptime(input_data['service_date'], "%Y-%m-%d").date()
-        ticket.service_desc = input_data['service_desc']
-        ticket.customer_id = input_data['customer_id']
-        ticket.mechanics = mechanics
+        if 'customer_id' in input_data:
+            customer = db.session.get(Customer, input_data['customer_id'])
+            if not customer:
+                return jsonify({"error": "Invalid customer ID"}), 400
+            ticket.customer_id = input_data['customer_id']
+
+        if 'mechanic_ids' in input_data:
+            mechanics = db.session.query(Mechanic).filter(Mechanic.id.in_(input_data['mechanic_ids'])).all()
+            if not mechanics or len(mechanics) != len(input_data['mechanic_ids']):
+                return jsonify({"error": "Invalid mechanic IDs"}), 400
+            ticket.mechanics = mechanics
 
         db.session.commit()
-        return ticket_schema.jsonify(ticket)
+        return ticket_schema.jsonify(ticket), 200
 
     except ValidationError as err:
         return jsonify(err.messages), 400
     except Exception as e:
         db.session.rollback()
         print(f"Unexpected error during ticket update: {e}")
-        return jsonify({"error": "An unexpected error occurred"}), 500
+        return jsonify({"error": "An unexpected error occurred", "details": str(e)}), 500
 
 #edit mechanics
 @tickets_bp.route('/<int:ticket_id>/edit', methods=['PUT'])

@@ -19,6 +19,7 @@ securityDefinitions:
 paths:
   /customers/login:
     post:
+      tags: [Customers]
       summary: "Customer login"
       description: "Authenticate a customer and return a token"
       parameters:
@@ -39,7 +40,9 @@ paths:
 
   /customers/:
     post:
+      tags: [Customers]
       summary: "Create a new customer"
+      description: "Create a new customer"
       parameters:
         - in: body
           name: body
@@ -54,7 +57,9 @@ paths:
         400:
           description: "Invalid input"
     get:
+      tags: [Customers]
       summary: "Get all customers (paginated)"
+      description: "Get all customers - default is 10 per page"
       parameters:
         - name: page
           in: query
@@ -74,7 +79,9 @@ paths:
 
   /customers/<int:id>:
     get:
+      tags: [Customers]
       summary: "Get a customer by ID"
+      description: "Input id to get specific customer"
       parameters:
         - name: id
           in: path
@@ -89,7 +96,9 @@ paths:
         404:
           description: "Customer not found"
     put:
+      tags: [Customers]
       summary: "Update a customer by ID"
+      description: "Make changes to customer data by id"
       security:
         - BearerAuth: []
       parameters:
@@ -112,7 +121,9 @@ paths:
         404:
           description: "Customer not found"
     delete:
+      tags: [Customers]
       summary: "Delete a customer by ID"
+      description: "Input customer ID to delete customer"
       security:
         - BearerAuth: []
       parameters:
@@ -128,7 +139,9 @@ paths:
 
   /customers/my-tickets:
     get:
+      tags: [Customers]
       summary: "Get customer's service tickets"
+      description: "Get all service tickets by all customers"
       security:
         - BearerAuth: []
       responses:
@@ -141,7 +154,9 @@ paths:
 
   /mechanics/:
     post:
+      tags: [Mechanics]
       summary: "Create a new mechanic"
+      description: "Create a new mechanic in the system"
       parameters:
         - in: body
           name: body
@@ -156,7 +171,9 @@ paths:
         400:
           description: "Invalid input or duplicate email"
     get:
+      tags: [Mechanics]
       summary: "Get all mechanics"
+      description: "List all the mechanics in the system"
       responses:
         200:
           description: "List of mechanics"
@@ -165,7 +182,9 @@ paths:
 
   /mechanics/<int:id>:
     get:
+      tags: [Mechanics]
       summary: "Get a mechanic by ID"
+      description: "Get mechanic by their ID"
       parameters:
         - name: id
           in: path
@@ -179,7 +198,9 @@ paths:
         404:
           description: "Mechanic not found"
     put:
+      tags: [Mechanics]
       summary: "Update a mechanic by ID"
+      description: "Update Mechanic by their ID"
       parameters:
         - name: id
           in: path
@@ -198,6 +219,7 @@ paths:
         404:
           description: "Mechanic not found"
     delete:
+      tags: [Mechanics]
       summary: "Delete a mechanic by ID"
       parameters:
         - name: id
@@ -212,7 +234,9 @@ paths:
 
   /mechanics/most_worked:
     get:
+      tags: [Mechanics]
       summary: "Get mechanics sorted by number of tickets worked on"
+      description: "Find out who was worked on the most tickets. Sorted."
       responses:
         200:
           description: "List of mechanics sorted by ticket count"
@@ -224,7 +248,9 @@ paths:
 
   /inventory/:
     post:
+      tags: [Inventory]
       summary: "Add a new inventory part"
+      description: "Add new item to inventory"
       parameters:
         - in: body
           name: body
@@ -239,7 +265,9 @@ paths:
         400:
           description: "Invalid input"
     get:
+      tags: [Inventory]
       summary: "Get all inventory parts"
+      description: "Get all inventory parts in the inventory"
       responses:
         200:
           description: "List of inventory parts"
@@ -249,7 +277,9 @@ paths:
 
   /inventory/<int:id>:
     get:
+      tags: [Inventory]
       summary: "Get inventory part by ID"
+      description: "Get inventory parts in the inventory by ID"
       parameters:
         - name: id
           in: path
@@ -263,7 +293,9 @@ paths:
         404:
           description: "Inventory part not found"
     put:
+      tags: [Inventory]
       summary: "Update inventory part by ID"
+      description: "Update inventory parts in the inventory by ID"
       parameters:
         - name: id
           in: path
@@ -282,7 +314,9 @@ paths:
         404:
           description: "Inventory part not found"
     delete:
+      tags: [Inventory]
       summary: "Delete inventory part by ID"
+      description: "Delete inventory parts in the inventory by ID"
       parameters:
         - name: id
           in: path
@@ -296,7 +330,9 @@ paths:
 
   /tickets/:
     post:
+      tags: [Tickets]
       summary: "Create a new service ticket"
+      description: "Create a new service ticket in the system"
       parameters:
         - in: body
           name: body
@@ -311,7 +347,9 @@ paths:
         400:
           description: "Invalid input"
     get:
+      tags: [Tickets]
       summary: "Get all service tickets"
+      description: "Get all service tickets in the system"
       responses:
         200:
           description: "List of service tickets"
@@ -322,7 +360,9 @@ paths:
 
   /tickets/<int:id>:
     get:
+      tags: [Tickets]
       summary: "Get a service ticket by ID"
+      description: "Get service ticket in the system by ID"
       parameters:
         - name: id
           in: path
@@ -336,7 +376,9 @@ paths:
         404:
           description: "Service ticket not found"
     put:
+      tags: [Tickets]
       summary: "Update a service ticket by ID"
+      description: "Update service ticket in the system by ID"
       parameters:
         - name: id
           in: path
@@ -357,7 +399,9 @@ paths:
 
   tickets/<int:id>/edit:
     put:
+      tags: [Tickets]
       summary: "Update ticket mechanics"
+      description: "Update a mechanic in a service ticket"
       parameters:
         - name: id
           in: path
@@ -378,7 +422,9 @@ paths:
 
   /tickets/<int:id>/add_part:
     put:
+      tags: [Tickets]
       summary: "Add an inventory part to a service ticket"
+      description: "Update an inventory part into the service ticket"
       parameters:
         - name: id
           in: path
@@ -569,7 +615,55 @@ definitions:
     properties:
       part_id:
         type: integer
-      
+
+  Mechanic:
+    type: object
+    properties:
+      id:
+        type: integer
+      name:
+        type: string
+      email:
+        type: string
+      phone:
+        type: string
+      salary:
+        type: number
+
+  InventoryPart:
+    type: object
+    properties:
+      id:
+        type: integer
+      name:
+        type: string
+      quantity:
+        type: integer
+      price:
+        type: number
+
+  ServiceTicket:
+    type: object
+    properties:
+      id:
+        type: integer
+      VIN:
+        type: string
+      service_date:
+        type: string
+        format: date
+      service_desc:
+        type: string
+      customer_id:
+        type: integer
+      mechanics:
+        type: array
+        items:
+          $ref: '#/definitions/Mechanic'
+      parts:
+        type: array
+        items:
+          $ref: '#/definitions/InventoryPart'
   # List responses
   CustomersPaginated:
     type: object
